@@ -5,6 +5,7 @@ import tkinter
 from PIL import Image
 from tkinter import messagebox
 # from PIL import Image
+import sqlite3
 
 
 ct.set_appearance_mode("dark")
@@ -36,9 +37,9 @@ def signup_dashboard():
     Calling the signup function which contains the entries,label and buttons for the signup
     """
     
-    signup_bg_image = ct.CTkImage(Image.open("images\\1.png"),size=(340,360))
+    signup_bg_image = ct.CTkImage(Image.open("images\\slide_logo.png"),size=(520,400))
     bg_image = ct.CTkLabel(master=father_frame,text="",image=signup_bg_image)
-    bg_image.place(x=750,y=70) 
+    bg_image.place(x=650,y=70) 
     signup_frame()
 
 def signin_dashboard():
@@ -103,36 +104,69 @@ def signup_frame():
     
 
 def signup_button_command():
-    global first_name,othernames,email,phonenumber,password,comfirmpassword
+    global first_name,othernames,email,phonenumber,password,comfirm_password
     first_name = firstname_entry.get()
     othernames= othernames_entry.get()
     email = sign_up_email_entry.get()
     phonenumber = phonenumber_entry.get()
     password = password_entry.get()
-    comfirmpassword = comfirm_password_entry.get()
+    comfirm_password = comfirm_password_entry.get()
 
-    # print("your comfirm password is" + ( comfirmpassword))
-    # print(first_name,othernames,email,phonenumber,password,comfirmpassword)
-    checking_entries_in_signup()
+    # print("your comfirm password is" + ( comfirm_password))
+    # print(first_name,othernames,email,phonenumber,password,comfirm_password)
 
-def checking_entries_in_signup():    
-    if first_name == "" or othernames == "" or email == "" or  phonenumber == "" or password == "" or comfirmpassword == "":
-        signup_error_label.configure(text="All Feilds Required *")
-        print("NOT completed")
+    checking_entries_in_signup() 
 
-    else:
-        signup_error_label.configure(text=" ")
-        print("COMPLETED")
+def checking_entries_in_signup():
+        if first_name == "" or othernames == "" or email == "" or  phonenumber == "" or password == "" or comfirm_password == "":
+            signup_error_label.configure(text="All Feilds Required *")
+            print("NOT completed")
 
-    if checker.get() == 0:
-        messagebox.showerror("Error","KINDLY ACCPET THE TERMS AND CONDITIO")
+            # else:
+            #     signup_error_label.configure(text=" ")
+            #     print("COMPLETED")
 
-    if password != comfirmpassword:
-        messagebox.showerror("PASSWORD ERROR","PASSWORD IS NOT SAME WITH COMFIRM PASSWORD")
-        pass 
-    else:
-        print("correct")
+        
+        elif password != comfirm_password:
+                messagebox.showerror("PASSWORD ERROR","PASSWORD IS NOT SAME WITH COMFIRM PASSWORD")
+        
+        elif checker.get() == 0:
+            messagebox.showerror("Error","KINDLY ACCPET THE TERMS & CONDITION")
 
+        else:
+            signup_error_label.configure(text=" ")
+            save_data_to_db(first_name,othernames,email,phonenumber,password,comfirm_password)
+        # print("correct")
+            signup_clear_all()
+    
+
+def signup_clear_all():
+    firstname_entry.delete(0,ct.END)
+    othernames_entry.delete(0,ct.END)
+    sign_up_email_entry.delete(0,ct.END)
+    phonenumber_entry.delete(0,ct.END)
+    password_entry.delete(0,ct.END)
+    checker.set(0)
+    comfirm_password_entry.delete(0,ct.END)
+
+def save_data_to_db(first_name,othernames,email,phonenumber,password,comfirm_password):
+    connection = sqlite3.connect("MY DATAASE.db")
+    cursor = connection.cursor()
+    connection.execute("""CREATE TABLE IF NOT EXISTS DATA
+                        (ID INTEGER PRIMARY KEY AUTOINCREMENT, FIRST_NAME text,OTHER_NAMES text,EMAIL text,PHONE_NUMBER int CHAR(11),PASSWORD text,COMFIRM_PASSWORD text)
+                            """)
+
+    insert_query = """INSERT INTO DATA
+            (FIRST_NAME, OTHER_NAMES, EMAIL, PHONE_NUMBER, PASSWORD, COMFIRM_PASSWORD)VALUES(?,?,?,?,?,?)"""
+
+    insert_data = (first_name,othernames,email,phonenumber,password,comfirm_password)
+    
+    cursor.execute(insert_query,insert_data)
+    connection.commit()
+    connection.close()
+    messagebox.showinfo("Success","REGISTRATION SUCCESSFUL")
+
+    
 def signin_frame():
     global sign_in_email_entry,sign_in_password_entry,signin_error_label
     ########################################################################################################
@@ -175,6 +209,7 @@ def checking_entries_in_signin():
         signin_error_label.configure(text="All Feilds Required *")
     else:
         signin_error_label.configure(text="")
+        
 # def logo():
     # log0frame = ct.CTkFrame(master=root,width=1000,height=100).place(x=20,y=10)
     # logo_img = ct.CTkImage(Image.open("logo.png"),size=(100,100))
