@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\User\OneDrive\Documents\Codes\Custom\venv"
+VIRTUAL_ENV="C:\Users\DigitalFortress\Documents\Codes\Rubish codes\auth\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

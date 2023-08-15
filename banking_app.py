@@ -6,27 +6,18 @@ from PIL import Image
 from tkinter import messagebox
 # from PIL import Image
 import sqlite3
+import bcrypt
 
 
 ct.set_appearance_mode("dark")
 ct.set_default_color_theme("dark-blue")
-######################################################################################################
-                        #Logo
+
 def bankname():
     global logolabel
     # logo_img = ct.CTkImage(Image.open("logo.png"),size=(140,110))
     logolabel = ct.CTkLabel(master=root,text="GLOBUS CITY BANK",text_color="green",font=ct.CTkFont("Roboto",30))
     logolabel.place(x=460,y=25)
 
-# def logo():
-#     global logolabel
-#     logo_img = ct.CTkImage(Image.open("logo.png"),size=(140,110))
-#     logolabel = ct.CTkLabel(master=root,image=logo_img,text="",fg_color="transparent")
-#     logolabel.place(x=550,y=5)
-
-
-######################################################################################################
-                       #CHILDREN FRAME
 
 def signup_dashboard():
     # parent_frame()
@@ -56,15 +47,9 @@ def signin_dashboard():
 def signup_frame():
     global firstname_entry,othernames_entry,sign_up_email_entry,phonenumber_entry,password_entry,checker,comfirm_password_entry,signup_error_label
 
-    ################################
-
-    #######################################################################################################
-                    #SIGN UP ENTRIES,BUTTONS AND LABEL
-
     signup_text = ct.CTkLabel(master=signup_page,text="SIGN UP",font=general_font)
     signup_text.place(x=120,y=10)
 
-    #######################################################################################################
     
     firstname_entry = ct.CTkEntry(master=signup_page,placeholder_text_color="gray",text_color="#1A1A1A",placeholder_text="First Name",width=260)
     firstname_entry.place(x=40,y=70)
@@ -94,7 +79,6 @@ def signup_frame():
     signup_button = ct.CTkButton(master=signup_page,text="SIGN UP",font=("Helvectica",14,"bold"),width=140,height=28,command=signup_button_command)
     signup_button.place(x=100,y=420)
 
-    #########################################################################################################
     
     haveanaccct_label = ct.CTkLabel(master=signup_page,font=("Helvetica", 14),text="Already Have An Account?",fg_color="transparent")
     haveanaccct_label.place(x=50,y=460)
@@ -104,7 +88,6 @@ def signup_frame():
     
 
 def signup_button_command():
-    global first_name,othernames,email,phonenumber,password,comfirm_password
     first_name = firstname_entry.get()
     othernames= othernames_entry.get()
     email = sign_up_email_entry.get()
@@ -112,33 +95,29 @@ def signup_button_command():
     password = password_entry.get()
     comfirm_password = comfirm_password_entry.get()
 
-    # print("your comfirm password is" + ( comfirm_password))
-    # print(first_name,othernames,email,phonenumber,password,comfirm_password)
+    checking_entries_in_signup(first_name,othernames,email,phonenumber,password,comfirm_password) 
 
-    checking_entries_in_signup() 
-
-def checking_entries_in_signup():
-        if first_name == "" or othernames == "" or email == "" or  phonenumber == "" or password == "" or comfirm_password == "":
+def checking_entries_in_signup(f_name,o_names,email,phonenumber,password,con_password):
+        if f_name == "" or o_names == "" or email == "" or  phonenumber == "" or password == "" or con_password == "":
             signup_error_label.configure(text="All Feilds Required *")
             print("NOT completed")
 
-            # else:
-            #     signup_error_label.configure(text=" ")
-            #     print("COMPLETED")
-
-        
-        elif password != comfirm_password:
-                messagebox.showerror("PASSWORD ERROR","PASSWORD IS NOT SAME WITH COMFIRM PASSWORD")
+        elif password != con_password:
+            messagebox.showerror("PASSWORD ERROR","PASSWORD IS NOT SAME WITH COMFIRM PASSWORD")
         
         elif checker.get() == 0:
             messagebox.showerror("Error","KINDLY ACCPET THE TERMS & CONDITION")
 
         else:
             signup_error_label.configure(text=" ")
-            save_data_to_db(first_name,othernames,email,phonenumber,password,comfirm_password)
-        # print("correct")
+            password = hash_password(password.encode())
+            save_data_to_db(f_name,o_names,email,phonenumber,password)
             signup_clear_all()
     
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password, salt)
+    return hashed
 
 def signup_clear_all():
     firstname_entry.delete(0,ct.END)
@@ -149,17 +128,17 @@ def signup_clear_all():
     checker.set(0)
     comfirm_password_entry.delete(0,ct.END)
 
-def save_data_to_db(first_name,othernames,email,phonenumber,password,comfirm_password):
-    connection = sqlite3.connect("MY DATAASE.db")
+def save_data_to_db(first_name,othernames,email,phonenumber,password):
+    connection = sqlite3.connect("database.db")
     cursor = connection.cursor()
     connection.execute("""CREATE TABLE IF NOT EXISTS DATA
-                        (ID INTEGER PRIMARY KEY AUTOINCREMENT, FIRST_NAME text,OTHER_NAMES text,EMAIL text,PHONE_NUMBER int CHAR(11),PASSWORD text,COMFIRM_PASSWORD text)
+                        (ID INTEGER PRIMARY KEY AUTOINCREMENT, FIRST_NAME text,OTHER_NAMES text,EMAIL text,PHONE_NUMBER int CHAR(11),PASSWORD text)
                             """)
 
     insert_query = """INSERT INTO DATA
-            (FIRST_NAME, OTHER_NAMES, EMAIL, PHONE_NUMBER, PASSWORD, COMFIRM_PASSWORD)VALUES(?,?,?,?,?,?)"""
+            (FIRST_NAME, OTHER_NAMES, EMAIL, PHONE_NUMBER, PASSWORD)VALUES(?,?,?,?,?)"""
 
-    insert_data = (first_name,othernames,email,phonenumber,password,comfirm_password)
+    insert_data = (first_name,othernames,email,phonenumber,password)
     
     cursor.execute(insert_query,insert_data)
     connection.commit()
@@ -169,8 +148,6 @@ def save_data_to_db(first_name,othernames,email,phonenumber,password,comfirm_pas
     
 def signin_frame():
     global sign_in_email_entry,sign_in_password_entry,signin_error_label
-    ########################################################################################################
-                        #SIGN UP ENTRIES,BUTTONS AND LABEL
 
     signin_text = ct.CTkLabel(master=signin_page,text="SIGN IN",font=general_font)
     signin_text.place(x=120,y=20)
@@ -197,24 +174,36 @@ def signin_frame():
 
 
 def signin_button_command():
-    global user_email,user_password
+
     user_email = sign_in_email_entry.get()
     user_password = sign_in_password_entry.get()
     print(user_email,user_password)
     # signin_button
-    checking_entries_in_signin()
+    checking_entries_in_signin(user_email,user_password)
 
-def checking_entries_in_signin():
+def checking_entries_in_signin(user_email,user_password):
     if user_email == "" or user_password == "":
         signin_error_label.configure(text="All Feilds Required *")
     else:
+        login(user_email, user_password)
         signin_error_label.configure(text="")
+
+def login(email, password):
+    con=sqlite3.connect('database.db')
+    cur=con.cursor()
+    statement= f"SELECT password from DATA WHERE EMAIL='{email}' AND PASSWORD ='{bcrypt.hashpw(password)}';"
+    cur.execute(statement)
+    if not cur.fetchone():
+        print('Login failed')
+        messagebox.showerror('RMS', 'Incorrect details.\nPlease check information again')
         
-# def logo():
-    # log0frame = ct.CTkFrame(master=root,width=1000,height=100).place(x=20,y=10)
-    # logo_img = ct.CTkImage(Image.open("logo.png"),size=(100,100))
-    # logolabel = ct.CTkLabel(master=log0frame,image=logo_img,text="")
-    # logolabel.place(x=10,y=20)
+    elif email=='':
+        messagebox.showerror("RMS", "Email can't be empty")
+    elif password=='':
+        messagebox.showerror("RMS", "Password can't be empty")
+    else:
+        #print('Welcome')
+        messagebox.showinfo('RMS', 'You have successfully Log in')
 
 def back_button():
     signin_page.place_forget()
@@ -231,32 +220,16 @@ def presignin_button_command():
 if __name__=="__main__":
 
     root = ct.CTk()
-    root.geometry("1200x670+60+20")
+    root.geometry("1200x670+50+10")
 
     general_font = ct.CTkFont(family="Roboto",size=26,weight="bold")
-    
-    ######################################################################################################
-                        #PARENT FRAME
 
     father_frame = ct.CTkFrame(master=root,width=1150,height=540)
     father_frame.place(x=22,y=120)
-    
-    # log0frame = ct.CTkFrame(master=root,width=1000,height=100).place(x=20,y=10)
-    # logo_img = ct.CTkImage(Image.open("logo.png"),size=(140,110))
-    # logolabel = ct.CTkLabel(master=root,image=logo_img,text="",fg_color="blue")
-    # logolabel.place(x=550,y=5)
 
-    ######################################################################################################
     
     bankname()
-    # logo()
     signup_dashboard()
-
-    
 
     root.mainloop()
     
-
-    # logo = ct.CTkImage(Image.open("logo.png"),size=((160,100)))
-    # logo = ct.CTkLabel(root,text=" ",image=logo,fg_color="transparent")
-    # logo.place(x=550,y=40)
