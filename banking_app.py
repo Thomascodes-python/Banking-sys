@@ -9,7 +9,7 @@ import sqlite3
 import bcrypt
 
 
-ct.set_appearance_mode("dark")
+ct.set_appearance_mode("light")
 ct.set_default_color_theme("dark-blue")
 
 def bankname():
@@ -28,10 +28,11 @@ def signup_dashboard():
     Calling the signup function which contains the entries,label and buttons for the signup
     """
     
-    signup_bg_image = ct.CTkImage(Image.open("images\\slide_logo.png"),size=(520,400))
+    signup_bg_image = ct.CTkImage(Image.open("images\\smartphone.png"),size=(520,400))
     bg_image = ct.CTkLabel(master=father_frame,text="",image=signup_bg_image)
     bg_image.place(x=650,y=70) 
     signup_frame()
+
 
 def signin_dashboard():
     global signin_page
@@ -41,7 +42,6 @@ def signin_dashboard():
     Calling the signin function which contains the entries,label and buttons for the signin
     """
     signin_frame()
-
 
 
 def signup_frame():
@@ -224,7 +224,7 @@ if __name__=="__main__":
 
     general_font = ct.CTkFont(family="Roboto",size=26,weight="bold")
 
-    father_frame = ct.CTkFrame(master=root,width=1150,height=540)
+    father_frame = ct.CTkFrame(master=root,width=1150,height=540,fg_color="transparent")
     father_frame.place(x=22,y=120)
 
     
