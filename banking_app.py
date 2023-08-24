@@ -1,10 +1,8 @@
-# from logging import root
 from customtkinter import *  
 import customtkinter as ct
 import tkinter
 from PIL import Image
 from tkinter import messagebox
-# from PIL import Image
 import sqlite3
 import bcrypt
 
@@ -14,9 +12,11 @@ ct.set_default_color_theme("dark-blue")
 
 def bankname():
     global logolabel
-    # logo_img = ct.CTkImage(Image.open("logo.png"),size=(140,110))
-    logolabel = ct.CTkLabel(master=root,text="GLOBUS CITY BANK",text_color="green",font=ct.CTkFont("Roboto",30))
-    logolabel.place(x=460,y=25)
+    logo_img = ct.CTkImage(Image.open("images/logo.png"),size=(140,110))
+    logo = ct.CTkLabel(master=root,image=logo_img,text='',text_color="green")
+    logo.place(x=550,y=30)
+    logolabel = ct.CTkLabel(master=root,text='GLOBUS CITY BANK',text_color="green",font=ct.CTkFont("Roboto",30, 'bold'))
+    logolabel.place(x=490,y=0)
 
 
 def signup_dashboard():
@@ -119,6 +119,7 @@ def hash_password(password):
     hashed = bcrypt.hashpw(password, salt)
     return hashed
 
+
 def signup_clear_all():
     firstname_entry.delete(0,ct.END)
     othernames_entry.delete(0,ct.END)
@@ -177,7 +178,6 @@ def signin_button_command():
 
     user_email = sign_in_email_entry.get()
     user_password = sign_in_password_entry.get()
-    print(user_email,user_password)
     # signin_button
     checking_entries_in_signin(user_email,user_password)
 
@@ -188,22 +188,27 @@ def checking_entries_in_signin(user_email,user_password):
         login(user_email, user_password)
         signin_error_label.configure(text="")
 
-def login(email, password):
+def login(email, user_password):
     con=sqlite3.connect('database.db')
     cur=con.cursor()
-    statement= f"SELECT password from DATA WHERE EMAIL='{email}' AND PASSWORD ='{bcrypt.hashpw(password)}';"
+    statement = f"SELECT * from DATA WHERE EMAIL = '{email}'"
     cur.execute(statement)
-    if not cur.fetchone():
-        print('Login failed')
-        messagebox.showerror('RMS', 'Incorrect details.\nPlease check information again')
-        
-    elif email=='':
-        messagebox.showerror("RMS", "Email can't be empty")
-    elif password=='':
-        messagebox.showerror("RMS", "Password can't be empty")
+
+    _, _, _, _, _,password = cur.fetchone()
+
+    if bcrypt.hashpw(user_password.encode(), password) == password:
+        print('Login Successful')
     else:
-        #print('Welcome')
-        messagebox.showinfo('RMS', 'You have successfully Log in')
+        print('Incorrect Details')
+    
+        
+    # elif email=='':
+    #     messagebox.showerror("RMS", "Email can't be empty")
+    # elif password=='':
+    #     messagebox.showerror("RMS", "Password can't be empty")
+    # else:
+    #     #print('Welcome')
+    #     messagebox.showinfo('RMS', 'You have successfully Log in')
 
 def back_button():
     signin_page.place_forget()
